@@ -13,7 +13,9 @@ import net.minecraft.util.Vec3;
 public class FarmerAI extends EntityAIBase {
 
 	private EntityCreature entity;
-
+	
+	Vec3 farmBase;
+	
 	private double lookX;
 	private double lookZ;
 	private double xPosition;
@@ -24,6 +26,11 @@ public class FarmerAI extends EntityAIBase {
 
 	public FarmerAI(EntityCreature entity) {
 		this.entity = entity;
+		farmBase = entity.getPosition(1.0f);
+		farmBase.xCoord = -124;
+		farmBase.yCoord = 71;
+		farmBase.zCoord = 277;
+		Functions.SendMessageToChat("Farm is at: " + farmBase.toString());
 		this.setMutexBits(1);
 	}
 
@@ -34,46 +41,69 @@ public class FarmerAI extends EntityAIBase {
 	 * continueExecuting() when continueExecuting() is returning false the loop
 	 * start from shouldExecute()
 	 */
-
+	
+	/**
+	 * North = -z
+	 * East = +x
+	 */
+	
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
+	private boolean goingToMatureWheat = false;
+	Vec3 wheatPosition;
+	private boolean atBase = false;
 	public boolean shouldExecute() {
-		Vec3 grassPos;
-		Vec3 myPos = grassPos = this.entity.getPosition(1.0f);
-		Block grassBlock;
-		boolean foundGrass = false;
-		double minD = 100000;
-		// Functions.SendMessageToChat("finding block");
-
-		for (int y = (int) (myPos.yCoord - 2); y < myPos.yCoord + 2; y++) {
-			for (int x = (int) (myPos.xCoord - 2); x < myPos.xCoord + 2; x++) {
-				for (int z = (int) (myPos.zCoord - 2); z < myPos.zCoord + 2; z++) {
-					Block b = this.entity.worldObj.getBlock(x, y, z);
-					if (b == Blocks.tallgrass) {
-						Vec3 thisPos = Vec3.createVectorHelper(x, y, z);
-						if (minD > Functions.calcDistance(myPos, thisPos)) {
-							minD = Functions.calcDistance(myPos, thisPos);
-							grassPos = thisPos;
-							grassBlock = b;
-							foundGrass = true;
-						}
+//		Vec3 grassPos;
+//		Vec3 myPos = grassPos = this.entity.getPosition(1.0f);
+//		Block grassBlock;
+//		boolean foundGrass = false;
+//		double minD = 100000;
+		//Functions.SendMessageToChat("finding wheat");
+		boolean foundMatureWheat = false;
+		
+		if (goingToMatureWheat)
+		{
+			Functions.SendMessageToChat("breaking block " + wheatPosition.toString());
+			Functions.breakBlock(entity.worldObj, wheatPosition.xCoord, wheatPosition.yCoord, wheatPosition.zCoord);
+			goingToMatureWheat = false;
+		}
+		
+		wheatPosition = farmBase;
+		int y = (int) farmBase.yCoord;
+		for (int x = (int) (farmBase.xCoord - 4); x < farmBase.xCoord + 5; x++) {
+			for (int z = (int) (farmBase.zCoord - 10); z < farmBase.zCoord - 1; z++) {
+				Block b = this.entity.worldObj.getBlock(x, y, z);
+				if (b == Blocks.wheat) {
+					int meta = this.entity.worldObj.getBlockMetadata(x, y, z);
+					if (meta == 7){
+						//Functions.SendMessageToChat(b.getClass().getSimpleName() + " : " + meta);
+						foundMatureWheat = true;
+						wheatPosition = Vec3.createVectorHelper(x, y, z);
+						goingToMatureWheat = true;
 					}
+					
 				}
 			}
 		}
+		
 
-		if (foundGrass) {
-			Functions.SendMessageToChat("breaking block " + grassPos.toString());
-			Functions.breakBlock(entity.worldObj, grassPos.xCoord, grassPos.yCoord, grassPos.zCoord);
+		xPosition = wheatPosition.xCoord;
+		yPosition = wheatPosition.yCoord;
+		zPosition = wheatPosition.zCoord;
+		
+		atBase = !foundMatureWheat && !goingToMatureWheat;
+		if (atBase){
+			if (!printetAtHome){
+				Functions.SendMessageToChat("home");
+				printetAtHome = true;
+			}
+		}else{
+			printetAtHome = false;
 		}
-
-		xPosition = grassPos.xCoord;
-		yPosition = grassPos.yCoord;
-		zPosition = grassPos.zCoord;
-
 		return true;
 	}
+	private boolean printetAtHome = false;
 
 	/**
 	 * Returns whether an in-progress EntityAIBase should continue executing
