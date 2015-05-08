@@ -16,7 +16,7 @@ import net.minecraft.util.ResourceLocation;
 @SideOnly(Side.CLIENT)
 public class RenderMale extends RenderLiving {
 	
-	private static final ResourceLocation maleFarmerTexture = new ResourceLocation(Strings.MOD_ID +  "/textures/entities/male_farmer_texture.png");
+	private static final ResourceLocation maleFarmerTexture = new ResourceLocation(Strings.MOD_ID +  ":textures/entities/male_farmer_texture.png");
 	private static final String __OFFID = "CL_00000984";
 	
 	public RenderMale(ModelBase par1, float par2)
