@@ -1,7 +1,7 @@
 package com.pj.functions;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.Vec3;
@@ -32,8 +32,17 @@ public class Functions {
 		return "" + GetHourOfDay() + ":" + GetMinutesOfDay();
 	}
 
-	public static Block getBlock(World worldObj, Vec3 pos) {
-		return worldObj.getBlock((int) Math.abs(pos.xCoord), (int) Math.abs(pos.yCoord), (int) Math.abs(pos.zCoord));
+	public static double calcDistance(Vec3 p1, Vec3 p2) {
+		return Math.sqrt(Math.pow(p1.xCoord + p2.xCoord, 2) + Math.pow(p1.yCoord + p2.yCoord, 2) + Math.pow(p1.zCoord + p2.zCoord, 2));
 	}
-
+	
+	public static void breakBlock(World world, double x, double y, double z){
+		breakBlock(world, (int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z));
+	}
+	public static void breakBlock(World world, int x, int y, int z){
+		if(world.getBlock(x, y, z) != Blocks.bedrock){
+			world.getBlock(x, y, z).dropBlockAsItem(world, x, y, z, world.getBlockMetadata(x, y, z), 0);
+			world.setBlockToAir(x, y, z);
+		}
+	}
 }
