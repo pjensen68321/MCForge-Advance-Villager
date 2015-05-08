@@ -5,4 +5,4 @@
 !.gitignore
 !src
 !*.zip
-!*.bat
+!*workspace.bat
