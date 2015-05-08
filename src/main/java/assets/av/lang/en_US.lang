@@ -1,0 +1,6 @@
+item.TestItem.name=Test Item
+
+tile.TestBlock.name=Test Block
+
+entity.Male.name=Male
+entity.Female.name=Female
