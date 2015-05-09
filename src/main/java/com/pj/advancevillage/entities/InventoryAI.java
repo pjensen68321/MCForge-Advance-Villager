@@ -545,6 +545,19 @@ public class InventoryAI  implements IInventory {
 
         aitemstack[p_70299_1_] = p_70299_2_;
     }
+    
+    public boolean removeItemStack(ItemStack stack){
+    	
+    	for (int i = 0 ; i < mainInventory.length ; i++)
+    	{
+    		if (mainInventory[i] == stack)
+    		{
+    			mainInventory[i] = null;
+    		}
+    	}
+    	
+    	return false;
+    }
 
     public float func_146023_a(Block p_146023_1_)
     {

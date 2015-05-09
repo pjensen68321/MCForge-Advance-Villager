@@ -15,7 +15,7 @@ import com.pj.functions.Functions;
 public class PickupItemsAI extends EntityAIBase {
 
 	private EntityAdvanceVillager entity;
-	
+
 	private double xPosition;
 	private double yPosition;
 	private double zPosition;
@@ -34,63 +34,32 @@ public class PickupItemsAI extends EntityAIBase {
 	 * continueExecuting() when continueExecuting() is returning false the loop
 	 * start from shouldExecute()
 	 */
-	
+
 	/**
-	 * North = -z
-	 * East = +x
+	 * North = -z East = +x
 	 */
-	
+
 	/**
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
-	boolean startup = true;
 	public boolean shouldExecute() {
-		
-		if (startup){
-			startup = false;
-			Functions.SendMessageToChat("picking up items");
-		}
-		
-		boolean foundItem = false;
-		Vec3 itemPosition;
-		
-		 List list = this.entity.worldObj.getEntitiesWithinAABB(EntityItem.class, this.entity.getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
-		if (list.size() > 0){
-			Functions.SendMessageToChat("found items");
-			
+		List list = this.entity.worldObj.getEntitiesWithinAABB(EntityItem.class, this.entity.getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
+		if (list.size() > 0) {
 			Iterator iterator = list.iterator();
-            while (iterator.hasNext())
-            {
-                EntityItem entityitem = (EntityItem)iterator.next();
-                
-                if (!entityitem.isDead && entityitem.getEntityItem() != null)
-                {
-                    ItemStack itemstack = entityitem.getEntityItem();
-                    
-                    if(this.entity.inventory.addItemStackToInventory(itemstack) != false) 
-                    {
-                    	this.entity.onItemPickup(entityitem, 1);
-                    	entityitem.setDead();
-                    	
-                    	ItemStack[] stacks = this.entity.inventory.getAllItems();
-                    	for (ItemStack s : stacks){
-                    		Functions.SendMessageToChat(s.toString());
-                    	}
-                    }
-                }
-            }
-			
+			while (iterator.hasNext()) {
+				EntityItem entityitem = (EntityItem) iterator.next();
+				if (!entityitem.isDead && entityitem.getEntityItem() != null) {
+					ItemStack itemstack = entityitem.getEntityItem();
+					if (this.entity.inventory.addItemStackToInventory(itemstack) != false) {
+						this.entity.onItemPickup(entityitem, 1);
+						entityitem.setDead();
+					}
+				}
+			}
 		}
-		//this.entity.canPickUpLoot();
-		
-//		xPosition = itemPosition.xCoord;
-//		yPosition = itemPosition.yCoord;
-//		zPosition = itemPosition.zCoord;
-		
-		return foundItem;
-		
+		// never does anything else but collecting items, so no path
+		return false;
 	}
-	private boolean printetAtHome = false;
 
 	/**
 	 * Returns whether an in-progress EntityAIBase should continue executing
@@ -109,6 +78,7 @@ public class PickupItemsAI extends EntityAIBase {
 	/**
 	 * Updates the task
 	 */
-	public void updateTask() {}
+	public void updateTask() {
+	}
 
 }
