@@ -6,8 +6,6 @@ import cpw.mods.fml.common.registry.EntityRegistry;
 import com.pj.advancevillage.MainRegistry;
 
 
-
-
 public class ModEntities {
 	
 	public static void mainRegistry(){
@@ -15,8 +13,8 @@ public class ModEntities {
 	}
 	
 	public static void registerEntity(){
-		createEntity(EntityMale.class, "Male", 0xF2FF00, 0x001EFF);
-		//createEntity(EntityFemale.class, "Male", 0xF2FF00, 0xFF0073);
+		createEntity(EntityMale.class,   "Male",   0xF2FF00, 0x001EFF);
+		createEntity(EntityFemale.class, "Female", 0xF2FF00, 0xFF00B3);
 	}
 	
 	public static void createEntity(Class entityClass, String entityName, int solidColor, int spotColor){

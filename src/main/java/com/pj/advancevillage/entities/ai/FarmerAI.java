@@ -1,18 +1,18 @@
 package com.pj.advancevillage.entities.ai;
 
-import com.pj.functions.Functions;
-
 import net.minecraft.block.Block;
-import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.ai.EntityAIBase;
-import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Vec3;
+
+import com.pj.advancevillage.entities.EntityAdvanceVillager;
+import com.pj.functions.Functions;
 
 public class FarmerAI extends EntityAIBase {
 
-	private EntityCreature entity;
+	private EntityAdvanceVillager entity;
 	
 	Vec3 farmBase;
 	
@@ -24,13 +24,16 @@ public class FarmerAI extends EntityAIBase {
 
 	private Block grassBlock;
 
-	public FarmerAI(EntityCreature entity) {
+	public FarmerAI(EntityAdvanceVillager entity) {
 		this.entity = entity;
 		farmBase = entity.getPosition(1.0f);
 		farmBase.xCoord = -124;
 		farmBase.yCoord = 71;
 		farmBase.zCoord = 277;
-		Functions.SendMessageToChat("Farm is at: " + farmBase.toString());
+		//Functions.SendMessageToChat("Farm is at: " + farmBase.toString());
+		
+		
+		
 		this.setMutexBits(1);
 	}
 
@@ -53,7 +56,12 @@ public class FarmerAI extends EntityAIBase {
 	private boolean goingToMatureWheat = false;
 	Vec3 wheatPosition;
 	private boolean atBase = false;
+	boolean startup = true;
 	public boolean shouldExecute() {
+		if (startup){
+			startup = false;
+			
+		}
 //		Vec3 grassPos;
 //		Vec3 myPos = grassPos = this.entity.getPosition(1.0f);
 //		Block grassBlock;
@@ -71,22 +79,50 @@ public class FarmerAI extends EntityAIBase {
 		
 		wheatPosition = farmBase;
 		int y = (int) farmBase.yCoord;
+		// find fully grown wheat
 		for (int x = (int) (farmBase.xCoord - 4); x < farmBase.xCoord + 5; x++) {
 			for (int z = (int) (farmBase.zCoord - 10); z < farmBase.zCoord - 1; z++) {
-				Block b = this.entity.worldObj.getBlock(x, y, z);
-				if (b == Blocks.wheat) {
-					int meta = this.entity.worldObj.getBlockMetadata(x, y, z);
-					if (meta == 7){
-						//Functions.SendMessageToChat(b.getClass().getSimpleName() + " : " + meta);
-						foundMatureWheat = true;
-						wheatPosition = Vec3.createVectorHelper(x, y, z);
-						goingToMatureWheat = true;
+				if (!((x == ((int) farmBase.xCoord)) && (z == ((int) farmBase.zCoord) -6))){
+					Block b = this.entity.worldObj.getBlock(x, y, z);
+					if (b == Blocks.wheat) {
+						int meta = this.entity.worldObj.getBlockMetadata(x, y, z);
+						if (meta == 7){
+							//Functions.SendMessageToChat(b.getClass().getSimpleName() + " : " + meta);
+							foundMatureWheat = true;
+							wheatPosition = Vec3.createVectorHelper(x, y, z);
+							goingToMatureWheat = true;
+						}
+						
 					}
-					
 				}
 			}
 		}
 		
+		// find empty farmland
+		for (int x = (int) (farmBase.xCoord - 4); x < farmBase.xCoord + 5; x++) {
+			for (int z = (int) (farmBase.zCoord - 10); z < farmBase.zCoord - 1; z++) {
+				if (!((x == ((int) farmBase.xCoord)) && (z == ((int) farmBase.zCoord) -6))){
+					Block b = this.entity.worldObj.getBlock(x, y, z);
+					if (b != Blocks.wheat) {
+						Block b2 = this.entity.worldObj.getBlock(x, y-1, z);
+						if (b2 == Blocks.farmland){
+							// seed
+							ItemStack[] stacks = this.entity.inventory.getAllItems();
+	                    	for (int slotNumber = 0 ; slotNumber < stacks.length ; slotNumber++)
+	                    	{
+	                    		if (stacks[slotNumber].getItem() == Items.wheat_seeds){
+	                    			Functions.SendMessageToChat("Seeds are in slot number " + slotNumber);
+	                    		}
+	                    	}
+						}else if (b2 == Blocks.grass || b2 == Blocks.dirt){
+							// use hoe
+						}else {
+							// remove block, set dirt
+						}
+					}
+				}
+			}
+		}
 
 		xPosition = wheatPosition.xCoord;
 		yPosition = wheatPosition.yCoord;
@@ -116,8 +152,8 @@ public class FarmerAI extends EntityAIBase {
 	 * Execute a one shot task or start executing a continuous task
 	 */
 	public void startExecuting() {
+		this.entity.getNavigator().tryMoveToXYZ(this.farmBase.xCoord - 1, this.farmBase.yCoord, this.farmBase.zCoord, 1.0f);
 		this.entity.getNavigator().tryMoveToXYZ(this.xPosition, this.yPosition, this.zPosition, 1.0f);
-
 	}
 
 	/**
