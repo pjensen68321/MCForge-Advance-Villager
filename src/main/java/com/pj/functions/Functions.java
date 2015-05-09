@@ -57,11 +57,23 @@ public class Functions {
 		List<blockInfo> blocksPositionsList = new ArrayList<blockInfo>();
 		int y = (int) center.yCoord;
 		for (int x = (int) (center.xCoord - eastLength); x <= center.xCoord + eastLength; x++) {
-			for (int z = (int) (center.zCoord - northLength); z <= center.zCoord + northLength; z++) {
-				if (includeCenter || !((x == ((int) center.xCoord)) && (z == ((int) center.zCoord)))) {
-					Block b = world.getBlock(x, y, z);
-					if (b == type) {
-						blocksPositionsList.add(new blockInfo(Vec3.createVectorHelper(x, y, z), b, world.getBlockMetadata(x, y, z)));
+			int notEqual = ((x % 2) * 2 - 1);
+			if ((x % 2) == 0) {
+				for (int z = (int) (center.zCoord - northLength); z <= center.zCoord + northLength; z++) {
+					if (includeCenter || !((x == ((int) center.xCoord)) && (z == ((int) center.zCoord)))) {
+						Block b = world.getBlock(x, y, z);
+						if (b == type) {
+							blocksPositionsList.add(new blockInfo(Vec3.createVectorHelper(x, y, z), b, world.getBlockMetadata(x, y, z)));
+						}
+					}
+				}
+			} else {
+				for (int z = (int) (center.zCoord + northLength); z >= center.zCoord - northLength; z--) {
+					if (includeCenter || !((x == ((int) center.xCoord)) && (z == ((int) center.zCoord)))) {
+						Block b = world.getBlock(x, y, z);
+						if (b == type) {
+							blocksPositionsList.add(new blockInfo(Vec3.createVectorHelper(x, y, z), b, world.getBlockMetadata(x, y, z)));
+						}
 					}
 				}
 			}
@@ -149,11 +161,12 @@ public class Functions {
 
 		return startingWith - left;
 	}
-	
-	/** 
+
+	/**
 	 * @param inv
 	 * @param stack
-	 * @param maxNumber number between 0 and 64, both included
+	 * @param maxNumber
+	 *            number between 0 and 64, both included
 	 */
 	public static void removeFromInventory(IInventory inv, ItemStack stack, int maxNumber) {
 		for (int i = 0; i < inv.getSizeInventory(); i++) {

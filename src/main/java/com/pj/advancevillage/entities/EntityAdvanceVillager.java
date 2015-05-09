@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import scala.reflect.internal.Trees.This;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIPanic;
+import net.minecraft.entity.ai.EntityAISit;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -16,6 +18,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
 
 import com.pj.advancevillage.entities.ai.FarmerAI;
@@ -35,7 +38,6 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 		this.setCanPickUpLoot(true);
 		// inventory = new InventoryAI(this);
 		inv = new ItemStack[36];
-		System.out.println("creating ADV_v");
 		/*
 		 * this.tasks.addTask(priority++, new EntityAIWander(this, 0.3d));
 		 * this.tasks.addTask(priority++, new EntityAIPanic(this, 0.1d));
@@ -56,12 +58,13 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 		// idle work
 		this.tasks.addTask(priority++, new lookIdleAtArea(this, 0));
 
-		this.setCurrentItemOrArmor(0, new ItemStack(Items.stone_hoe));
+		// this.setCurrentItemOrArmor(0, new ItemStack(Items.stone_hoe));
 		// this.setCurrentItemOrArmor(1, new
 		// ItemStack(Items.diamond_chestplate));
 		// this.setCurrentItemOrArmor(2, new ItemStack(Items.diamond_leggings));
 		// this.setCurrentItemOrArmor(3, new ItemStack(Items.diamond_boots));
 		// this.setCurrentItemOrArmor(4, new ItemStack(Items.diamond_helmet));
+
 	}
 
 	public boolean isAIEnabled() {
@@ -89,6 +92,26 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 	}
 
 	// inventory stuff
+
+	@Override
+	public void onDeath(DamageSource source) {
+		ItemStack[] stacks = getAllItems();
+		for (ItemStack stack : stacks) {
+			this.dropItem(stack.getItem(), stack.stackSize);
+		}
+		super.onDeath(source);
+	};
+
+	@Override
+	public boolean canMateWith(EntityAnimal otherEntity) {
+		// if (otherEntity.getClass() == this.getClass()) {
+		// EntityAdvanceVillager AdvVillager = (EntityAdvanceVillager)
+		// otherEntity;
+		// return AdvVillager.isMale == !this.isMale;
+		// }
+
+		return false;
+	};
 
 	@Override
 	public int getSizeInventory() {
@@ -224,15 +247,15 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 	 * the correct items.
 	 */
 	public void readInventoryFromNBT(NBTTagCompound tagCompound) {
-        
-        NBTTagList tagList = tagCompound.getTagList("Inventory",10);
-        for (int i = 0; i < tagList.tagCount(); i++) {
-                NBTTagCompound tag = (NBTTagCompound) tagList.getCompoundTagAt(i);
-                byte slot = tag.getByte("Slot");
-                if (slot >= 0 && slot < inv.length) {
-                        inv[slot] = ItemStack.loadItemStackFromNBT(tag);
-                }
-        }
+
+		NBTTagList tagList = tagCompound.getTagList("Inventory", 10);
+		for (int i = 0; i < tagList.tagCount(); i++) {
+			NBTTagCompound tag = (NBTTagCompound) tagList.getCompoundTagAt(i);
+			byte slot = tag.getByte("Slot");
+			if (slot >= 0 && slot < inv.length) {
+				inv[slot] = ItemStack.loadItemStackFromNBT(tag);
+			}
+		}
 	}
 
 	/**
@@ -240,30 +263,28 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 	 * slot indices are used (+100 for armor, +80 for crafting).
 	 */
 	public void writeInventoryToNBT(NBTTagCompound tagCompound) {
-        
-        NBTTagList itemList = new NBTTagList();
-        for (int i = 0; i < inv.length; i++) {
-                ItemStack stack = inv[i];
-                if (stack != null) {
-                        NBTTagCompound tag = new NBTTagCompound();
-                        tag.setByte("Slot", (byte) i);
-                        stack.writeToNBT(tag);
-                        itemList.appendTag(tag);
-                }
-        }
-        tagCompound.setTag("Inventory", itemList);
+
+		NBTTagList itemList = new NBTTagList();
+		for (int i = 0; i < inv.length; i++) {
+			ItemStack stack = inv[i];
+			if (stack != null) {
+				NBTTagCompound tag = new NBTTagCompound();
+				tag.setByte("Slot", (byte) i);
+				stack.writeToNBT(tag);
+				itemList.appendTag(tag);
+			}
+		}
+		tagCompound.setTag("Inventory", itemList);
 	}
 
 	@Override
 	public void writeEntityToNBT(NBTTagCompound p_70014_1_) {
-		System.out.println("writing NBT");
 		super.writeEntityToNBT(p_70014_1_);
 		this.writeInventoryToNBT(p_70014_1_);
 	}
 
 	@Override
 	public void readEntityFromNBT(NBTTagCompound p_70037_1_) {
-		System.out.println("reading NBT");
 		super.readEntityFromNBT(p_70037_1_);
 		readInventoryFromNBT(p_70037_1_);
 	}
