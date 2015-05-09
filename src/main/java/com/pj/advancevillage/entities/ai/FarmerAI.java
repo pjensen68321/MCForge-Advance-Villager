@@ -52,31 +52,33 @@ public class FarmerAI extends EntityAIBase {
 	Vec3 blockPosition;
 	private boolean atBase = false;
 	private String goingTo = "";
-	private boolean goingFromBase = false;;
+	private boolean goingFromBase = false;
 
 	public boolean shouldExecute() {
 
-		goingFromBase = goingTo.equals("base");
-
-		if (atBase) {
+		if (atBase && !goingFromBase) {
 			// drop items in chest
-			BlockChest chest = (BlockChest) entity.worldObj.getBlock((int) farmBase.xCoord - 2, (int) farmBase.yCoord + 1, (int) farmBase.zCoord - 1);
-			IInventory inv = chest.func_149951_m(entity.worldObj, (int) farmBase.xCoord - 2, (int) farmBase.yCoord + 1, (int) farmBase.zCoord - 1);
+			Block b = entity.worldObj.getBlock((int) farmBase.xCoord - 2, (int) farmBase.yCoord, (int) farmBase.zCoord - 1);
+			if (b == Blocks.chest) {
+				// BlockChest chest = (BlockChest) b;
+				IInventory inv = Blocks.chest.func_149951_m(entity.worldObj, (int) farmBase.xCoord - 2, (int) farmBase.yCoord, (int) farmBase.zCoord - 1);
 
-			ItemStack[] stacks = entity.inventory.getAllItems();
-			int numberOfSeedStacks = 0;
-			for (ItemStack stack : stacks) {
-				if (stack.getItem() != Items.wheat_seeds) {
-					Functions.transfereItemStack(entity.inventory, inv, stack, 64);
-				} else {
-					if (stack.stackSize > 10 || numberOfSeedStacks > 1) {
-						Functions.transfereItemStack(entity.inventory, inv, stack, (stack.stackSize - 5) + numberOfSeedStacks * 10);
+				ItemStack[] stacks = entity.getAllItems();
+				int numberOfSeedStacks = 0;
+				for (ItemStack stack : stacks) {
+					if (stack.getItem() != Items.wheat_seeds) {
+						Functions.transfereItemStack(entity, inv, stack, 64);
+					} else {
+						if (stack.stackSize > 10 || numberOfSeedStacks > 1) {
+							Functions.transfereItemStack(entity, inv, stack, (stack.stackSize - 5) + numberOfSeedStacks * 10);
+						}
+						numberOfSeedStacks++;
 					}
-					numberOfSeedStacks++;
 				}
 			}
 		}
 
+		goingFromBase = goingTo.equals("base");
 		// go back
 		blockPosition = farmBase;
 		goingTo = "base";
@@ -96,7 +98,7 @@ public class FarmerAI extends EntityAIBase {
 			Block b = entity.worldObj.getBlock((int) wb.position.xCoord, (int) wb.position.yCoord - 1, (int) wb.position.zCoord);
 			if (b == Blocks.farmland) {
 				// going to place seeds if seeds in inventory
-				ItemStack[] stacks = this.entity.inventory.getAllItems();
+				ItemStack[] stacks = this.entity.getAllItems();
 				for (int slotNumber = 0; slotNumber < stacks.length; slotNumber++) {
 					if (stacks[slotNumber].getItem() == Items.wheat_seeds) {
 						// found seeds in inventory
@@ -115,7 +117,8 @@ public class FarmerAI extends EntityAIBase {
 		if (!goingTo.equals("base"))
 			atBase = false;
 
-		return true;
+
+		return !atBase;
 	}
 
 	/**
@@ -128,11 +131,12 @@ public class FarmerAI extends EntityAIBase {
 		if (endOfRoute) {
 			if (goingTo.equals("base")) {
 				atBase = true;
+				//this.entity.getLookHelper().setLookPosition(entity.posX + 0, entity.posY + (double) entity.getEyeHeight(), entity.posZ + 1, 10.0F, (float) entity.getVerticalFaceSpeed());
 			} else if (goingTo.equals("wheat")) {
 				Functions.breakBlock(entity.worldObj, blockPosition.xCoord, blockPosition.yCoord, blockPosition.zCoord);
 			} else if (goingTo.equals("farmland")) {
 				this.entity.worldObj.setBlock((int) blockPosition.xCoord, (int) blockPosition.yCoord, (int) blockPosition.zCoord, Blocks.wheat);
-				this.entity.inventory.consumeInventoryItem(Items.wheat_seeds);
+				this.entity.consumeInventoryItem(Items.wheat_seeds);
 			}
 		}
 
@@ -157,6 +161,7 @@ public class FarmerAI extends EntityAIBase {
 		// + this.lookX, this.idleEntity.posY +
 		// (double)this.idleEntity.getEyeHeight(), this.idleEntity.posZ +
 		// this.lookZ, 10.0F, (float)this.idleEntity.getVerticalFaceSpeed());
+
 	}
 
 }

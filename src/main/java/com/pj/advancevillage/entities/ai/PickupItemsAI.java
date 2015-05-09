@@ -50,10 +50,12 @@ public class PickupItemsAI extends EntityAIBase {
 				EntityItem entityitem = (EntityItem) iterator.next();
 				if (!entityitem.isDead && entityitem.getEntityItem() != null) {
 					ItemStack itemstack = entityitem.getEntityItem();
-					if (this.entity.inventory.addItemStackToInventory(itemstack) != false) {
-						this.entity.onItemPickup(entityitem, 1);
-						entityitem.setDead();
-					}
+					Functions.addToInventory(entity, itemstack, 64);
+					this.entity.onItemPickup(entityitem, 1);
+					entityitem.setDead();
+//					if (this.entity.inventory.addItemStackToInventory(itemstack) != false) {
+//						
+//					}
 				}
 			}
 		}
