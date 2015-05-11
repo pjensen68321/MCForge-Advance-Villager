@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import scala.reflect.internal.Trees.This;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIPanic;
-import net.minecraft.entity.ai.EntityAISit;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
@@ -20,10 +18,16 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.World;
+import net.minecraftforge.event.entity.player.EntityInteractEvent;
 
+import com.pj.advancevillage.MainRegistry;
 import com.pj.advancevillage.entities.ai.FarmerAI;
+import com.pj.advancevillage.entities.ai.ForresterAI;
 import com.pj.advancevillage.entities.ai.PickupItemsAI;
 import com.pj.advancevillage.entities.ai.lookIdleAtArea;
+import com.pj.functions.nameGenerator;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 
@@ -31,13 +35,21 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 	private boolean isMale;
 	private ItemStack[] inv;
 
+	private String firstname = "";
+	private String surname = "";
+	private String occupation = "";
+
 	public EntityAdvanceVillager(World worldIn, boolean isMale) {
 		super(worldIn);
 		this.isMale = isMale;
 		this.setSize(0.9f, 1.9f);
 		this.setCanPickUpLoot(true);
+
 		// inventory = new InventoryAI(this);
 		inv = new ItemStack[36];
+		System.out.println("creating mob on client " + worldIn.isRemote);
+		// (this.worldObj.getWorldInfo().getWorldName()
+
 		/*
 		 * this.tasks.addTask(priority++, new EntityAIWander(this, 0.3d));
 		 * this.tasks.addTask(priority++, new EntityAIPanic(this, 0.1d));
@@ -46,25 +58,71 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 		 * this.tasks.addTask(priority++, new EntityAITempt(this, 1.5d,
 		 * Items.coal, false));
 		 */
+		if (!worldIn.isRemote) {
 
-		int priority = 0; // make sure that the order they are in here is the
-							// priority. where the first is the most important
-		this.tasks.addTask(priority++, new EntityAIPanic(this, 1.5f));
-		this.tasks.addTask(priority++, new PickupItemsAI(this));
+			int priority = 0; // makes sure that the order they are in here is
+								// the
+								// priority. where the first is the most
+								// important
+			this.tasks.addTask(priority++, new EntityAIPanic(this, 1.5f));
+			this.tasks.addTask(priority++, new PickupItemsAI(this));
 
-		// jobs
-		this.tasks.addTask(priority++, new FarmerAI(this));
+			// jobs
+			// this.tasks.addTask(priority++, new FarmerAI(this,
+			// Items.wheat_seeds, Blocks.wheat));
+			this.tasks.addTask(priority++, new FarmerAI(this, Items.potato));
+			this.tasks.addTask(priority++, new ForresterAI(this));
 
-		// idle work
-		this.tasks.addTask(priority++, new lookIdleAtArea(this, 0));
+			// idle work
+			this.tasks.addTask(priority++, new lookIdleAtArea(this, 0));
 
-		// this.setCurrentItemOrArmor(0, new ItemStack(Items.stone_hoe));
-		// this.setCurrentItemOrArmor(1, new
-		// ItemStack(Items.diamond_chestplate));
-		// this.setCurrentItemOrArmor(2, new ItemStack(Items.diamond_leggings));
-		// this.setCurrentItemOrArmor(3, new ItemStack(Items.diamond_boots));
-		// this.setCurrentItemOrArmor(4, new ItemStack(Items.diamond_helmet));
+		}
 
+		getFirstame();
+		getSurname();
+	}
+
+	public Boolean IsMale() {
+		return isMale;
+	}
+
+	public String getFirstame() {
+		if (firstname.equals(""))
+			setFirstname(generateFirstname());
+		return this.firstname;
+	}
+
+	public String getSurname() {
+		if (surname.equals(""))
+			setSurname(generateSurname());
+		return this.surname;
+	}
+
+	public String getOccupation() {
+		return this.occupation;
+	}
+
+	private void setFirstname(String newFirstname) {
+		this.firstname = newFirstname;
+		this.setCustomNameTag(this.occupation + " " + this.firstname + " " + this.surname);
+	}
+
+	public void setSurname(String newSurname) {
+		this.surname = newSurname;
+		this.setCustomNameTag(this.occupation + " " + this.firstname + " " + this.surname);
+	}
+
+	public void setOccupation(String newOccupation) {
+		this.occupation = newOccupation;
+		this.setCustomNameTag(this.occupation + " " + this.firstname + " " + this.surname);
+	}
+
+	private String generateFirstname() {
+		return nameGenerator.getRandomFirstname(this.isMale);
+	}
+
+	private String generateSurname() {
+		return nameGenerator.getRandomSurname(this.isMale);
 	}
 
 	public boolean isAIEnabled() {
@@ -112,6 +170,21 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 
 		return false;
 	};
+
+	@Override
+	public boolean interact(EntityPlayer player) {
+		
+		System.out.println("Right clicked 2");
+		player.openGui(MainRegistry.modInstance, 0, this.worldObj, (int) this.posX, (int) this.posY, (int) this.posZ);
+		return super.interact(player);
+	};
+
+	@SubscribeEvent
+	public void onEntityRightClicked(EntityInteractEvent event) {
+		System.out.println("Right clicked");
+		// ItemStack itemstack = event.entityPlayer.inventory.getCurrentItem();
+		event.entityPlayer.openGui(MainRegistry.modInstance, 0, this.worldObj, (int) this.posX, (int) this.posY, (int) this.posZ);
+	}
 
 	@Override
 	public int getSizeInventory() {
@@ -188,13 +261,13 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 	@Override
 	public void openInventory() {
 		// TODO Auto-generated method stub
-
+		// make villager stand still
 	}
 
 	@Override
 	public void closeInventory() {
 		// TODO Auto-generated method stub
-
+		// let village move again
 	}
 
 	@Override
@@ -256,6 +329,10 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 				inv[slot] = ItemStack.loadItemStackFromNBT(tag);
 			}
 		}
+
+		setFirstname(tagCompound.getString("firstname"));
+		this.surname = tagCompound.getString("surname");
+
 	}
 
 	/**
@@ -274,7 +351,11 @@ public class EntityAdvanceVillager extends EntityAnimal implements IInventory {
 				itemList.appendTag(tag);
 			}
 		}
+
 		tagCompound.setTag("Inventory", itemList);
+		tagCompound.setString("firstname", this.firstname);
+		tagCompound.setString("surname", this.surname);
+
 	}
 
 	@Override

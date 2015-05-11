@@ -22,6 +22,7 @@ public class ModEntities {
 		
 		EntityRegistry.registerGlobalEntityID(entityClass, entityName, randomId);
 		EntityRegistry.registerModEntity(entityClass, entityName, randomId, MainRegistry.modInstance, 64, 1, true);
+		
 		createEgg(randomId, solidColor, spotColor);
 	}
 

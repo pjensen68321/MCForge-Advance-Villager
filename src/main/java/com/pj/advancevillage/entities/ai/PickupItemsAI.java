@@ -43,7 +43,7 @@ public class PickupItemsAI extends EntityAIBase {
 	 * Returns whether the EntityAIBase should begin execution.
 	 */
 	public boolean shouldExecute() {
-		List list = this.entity.worldObj.getEntitiesWithinAABB(EntityItem.class, this.entity.getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
+		List list = this.entity.worldObj.getEntitiesWithinAABB(EntityItem.class, this.entity.getEntityBoundingBox().expand(3.0D, 2.0D, 3.0D));
 		if (list.size() > 0) {
 			Iterator iterator = list.iterator();
 			while (iterator.hasNext()) {
